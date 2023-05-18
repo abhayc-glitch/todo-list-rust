@@ -1,6 +1,6 @@
-use std::io;
+
 use std::env;
-use std::string;
+
 
 struct TodoItem{
     name: String,
@@ -16,35 +16,51 @@ impl TodoItem {
     }
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let userCommand = args[1].clone();
+struct TodoList{
+    list: Vec<TodoItem>
+}
 
-    let todoItem = TodoItem{
-        name: "Finish the Rust Tutorial".to_string(),
-        completed: ' '
-    };
-
-    let mut todos: Vec<TodoItem> = vec![];
-
-    if userCommand == "get" {
-        for i in todos {
-            println!("[{}] - {}", i.completed, i.name)
-        }
-    } else if userCommand == "add" {
-        println!("Adding task to list...");
-        let user_task = args[2].clone();
-        let new_todo = TodoItem::new(user_task);
-        todos.push(new_todo);
-
-
-    } else if userCommand == "remove" {
-        println!("Removing task from list...")
-    } else if userCommand ==  "Finish" {
-
+// Implements new todolist function
+impl TodoList {
+    fn new() -> TodoList{   
+        return TodoList{list: Vec::new()};
     }
 
+    fn add_task(&mut self, name: String) {
+        let new_todo = TodoItem::new(name);
+        self.list.push(new_todo);
+    }
 
-    println!("{:?}", args)
+    fn print(&self) {
+        for i in &self.list {
+            println!("[{}] - {}", i.completed, i.name)
+        }
+    }
+}
+
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let user_command = args[1].clone();
+    let mut todos = TodoList::new();
+
+    todos.add_task("Finish rust tutorial".to_string());
+
+
+    if user_command == "get" {
+        todos.print();
+
+    } else if user_command == "add" {
+        println!("Adding task to list...");
+
+        let user_task = args[2].clone();
+        let new_todo = TodoItem::new(user_task);
+
+        todos.add_task(new_todo.name);
+
+        println!("Here is the updated list...");
+        todos.print();
+    }
+
 
 }
