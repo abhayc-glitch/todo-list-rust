@@ -1,5 +1,6 @@
 
 use std::env;
+use std::convert::TryInto;
 
 
 struct TodoItem{
@@ -31,6 +32,19 @@ impl TodoList {
         self.list.push(new_todo);
     }
 
+    fn remove(&mut self, index: usize) {
+        self.list.remove(index);
+    }
+
+    fn done(&mut self, index: usize) {
+
+        if self.list[index].completed == ' ' {
+            self.list[index].completed = 'x';
+        } else {
+            self.list[index].completed = ' ';
+        }
+    }
+
     fn print(&self) {
         for i in &self.list {
             println!("[{}] - {}", i.completed, i.name)
@@ -38,29 +52,53 @@ impl TodoList {
     }
 }
 
+enum Command {
+     get,
+    add_task(String),
+    remove(usize),
+    done(usize),
+}
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let user_command = args[1].clone();
+    
+    let user_command = match args[1].as_str() {
+        "get" => Command::get,
+        "add" => Command::add_task(args[2].clone()),
+        "done" => Command::done(args[2].parse().expect("error converting to integer")),
+        "remove" => Command::remove(args[2].parse().expect("error converting to integer")),
+        _ => panic!("You must provide an accepted command")
+    };
+
     let mut todos = TodoList::new();
 
     todos.add_task("Finish rust tutorial".to_string());
 
 
-    if user_command == "get" {
-        todos.print();
+    match user_command {
+        Command::get => todos.print(),
+        Command::add_task(user_task) => {
+            println!("Adding task to list...");
 
-    } else if user_command == "add" {
-        println!("Adding task to list...");
+            todos.add_task(user_task);
 
-        let user_task = args[2].clone();
-        let new_todo = TodoItem::new(user_task);
+            println!("Here is the updated list...");
+            todos.print();
+        }
+        Command::remove(index) => {
+            let adjusted_index = index - 1;
+            todos.remove(adjusted_index);
 
-        todos.add_task(new_todo.name);
+            println!("Here is the updated list...");
+            todos.print();
+        },
+        Command::done(index) => {
+            let adjusted_index = index - 1;
+            todos.done(adjusted_index);
 
-        println!("Here is the updated list...");
-        todos.print();
+            println!("Here is the updated list...");
+            todos.print();
+        },
     }
-
-
 }
